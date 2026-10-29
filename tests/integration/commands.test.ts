@@ -5,6 +5,7 @@ import { TextDocumentPresenter } from '../../src/adapters/presentation/TextDocum
 import { ShapeFactory } from '../../src/domain/factories/ShapeFactory.js';
 import { Repl } from '../../src/cli/Repl.js';
 import { Tokenizer } from '../../src/cli/Tokenizer.js';
+import { Readable, Writable } from 'node:stream';
 import type { SvgCodec } from '../../src/application/ports/SvgCodec.js';
 
 describe('CLI command and history contracts', () => {
@@ -51,6 +52,16 @@ describe('CLI command and history contracts', () => {
     expect(await repl.evaluate('redo')).toBe('error: undo not allowed after io command');
     await repl.evaluate('move scene 0 0'); await repl.evaluate('undo');
     expect(await repl.evaluate('undo')).toBe('error: nothing to undo');
+  });
+
+  it('prints svg> prompts for interactive input and closes at EOF', async () => {
+    const { repl } = createEditor();
+    let text = '';
+    const output = new Writable({ write(chunk, _encoding, callback) { text += chunk.toString(); callback(); } });
+    await repl.run(Readable.from(['init\ncreate g scene\n# comment\n']), output, true);
+    expect(text.match(/svg> /g)).toHaveLength(4);
+    expect(text).toContain('svg> canvas 800x600 created');
+    expect(text).toContain('svg> g#scene created');
   });
 
   it('restores cross-parent ordering and every descendant as one history unit', async () => {
@@ -115,5 +126,32 @@ describe('CLI command and history contracts', () => {
     expect(await repl.evaluate('scale g 10')).toContain('error: invalid number');
     expect(state()).toBe(before);
     expect(session.document.find('r').attributes.x).toBe('1');
+  });
+
+  it.each([
+    'create rect new 10 20 30 40 blue in outer', 'create circle new 10 20 30 in outer',
+    'create ellipse new 10 20 30 40 in outer', 'create line new 10 20 30 40 black in outer',
+    'create text new 10 20 "new text" in outer', 'create g new in outer',
+    'delete outer', 'move outer -5 2.5', 'scale outer 1.5', 'set r width 8',
+    'set t text "changed"', 'set outer fill blue', 'group pair c r', 'ungroup inner',
+    'addto inner r', 'front inner', 'back r',
+  ])('restores and redoes one complete edit: %s', async command => {
+    const { session, repl } = createEditor();
+    const presenter = new TextDocumentPresenter();
+    for (const setup of ['init', 'create g outer', 'create g inner in outer',
+      'create rect r 1 2 3 4 in outer', 'create circle c 10 20 30 in inner',
+      'create text t 10 20 "original" in inner']) await repl.evaluate(setup);
+    const before = presenter.tree(session.document);
+    const history = session.historyStatus.undo;
+    expect(await repl.evaluate(command)).not.toMatch(/^error:/);
+    const after = presenter.tree(session.document);
+    expect(after).not.toBe(before);
+    expect(session.historyStatus.undo).toBe(history + 1);
+    expect(await repl.evaluate('undo')).not.toMatch(/^error:/);
+    expect(presenter.tree(session.document)).toBe(before);
+    session.document.assertInvariants();
+    expect(await repl.evaluate('redo')).not.toMatch(/^error:/);
+    expect(presenter.tree(session.document)).toBe(after);
+    session.document.assertInvariants();
   });
 });

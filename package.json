@@ -12,7 +12,8 @@
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check:architecture": "tsx scripts/check-architecture.ts",
+    "examples": "npm run build && tsx scripts/ReplayExamples.ts",
+    "check:architecture": "tsx scripts/ArchitectureCheck.ts",
     "check": "npm run typecheck && npm run build && npm run check:architecture && npm test"
   },
   "devDependencies": {
