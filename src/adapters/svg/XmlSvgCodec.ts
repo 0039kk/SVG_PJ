@@ -22,7 +22,9 @@ export class XmlSvgCodec implements SvgCodec {
     root.setAttribute('viewBox', `0 0 ${document.width} ${document.height}`);
     const visitor = new SvgOutputVisitor(xml);
     for (const shape of document.root.children) root.appendChild(shape.accept(visitor));
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(xml) + '\n';
+    // XML reparsing normalizes literal CR to LF, so keep CR as a character reference.
+    const source = new XMLSerializer().serializeToString(xml).replace(/\r/g, '&#13;');
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + source + '\n';
   }
 
   decode(source: string): { readonly document: SvgDocument; readonly warnings: readonly string[] } {

@@ -47,6 +47,9 @@ describe('SVG import export and IO isolation', () => {
     expect(decoded.find('t').textContent).toBe(document.find('t').textContent);
     expect(decoded.find('empty').textContent).toBe('');
     expect(codec.decode('<svg><text id="t"><![CDATA[<>&]]></text></svg>').document.find('t').textContent).toBe('<>&');
+    const carriageReturn = codec.decode('<svg><text id="cr">a&#13;b</text></svg>').document;
+    expect(codec.encode(carriageReturn)).toContain('a&#13;b');
+    expect(codec.decode(codec.encode(carriageReturn)).document.find('cr').textContent).toBe('a\rb');
     expect(decoded.find('t').attributes).not.toHaveProperty('fill');
   });
 
