@@ -32,7 +32,7 @@ npm run check
 npm run examples
 ```
 
-- `check`：类型检查、构建、架构规则检查和 60 项测试。
+- `check`：类型检查、构建、架构规则检查和 79 项测试。
 - `examples`：用编译后 CLI 回放两份需求示例，生成 `examples/flowchart.svg`、`examples/demo.svg`；回放记录位于忽略提交的 `.verification/`。
 - `npm run build` 后也可使用 `npm start` 或 `node dist/main.js`。
 
