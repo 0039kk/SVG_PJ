@@ -8,4 +8,5 @@ export class ScaleCommand extends EditCommand {
     shape.scale(this.factor);
     return `${shape.label} scaled by ${this.factor}`;
   }
+  protected describeUndo(document: SvgDocument): string { return `${document.find(this.id).label} scale restored`; }
 }

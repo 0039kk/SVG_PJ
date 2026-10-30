@@ -6,6 +6,13 @@ export class SetCommand extends EditCommand {
   protected apply(document: SvgDocument): string {
     const shape = document.find(this.id);
     shape.setAttribute(this.attribute, this.value);
-    return `${shape.label} updated: ${this.attribute}=${JSON.stringify(this.value)}`;
+    return this.describe(document);
+  }
+  protected describeUndo(document: SvgDocument): string { return this.describe(document); }
+  private describe(document: SvgDocument): string {
+    const shape = document.find(this.id);
+    const value = this.attribute === 'text' ? shape.textContent : shape.attributes[this.attribute];
+    if (value === undefined) return `${shape.label} updated: ${this.attribute} removed`;
+    return `${shape.label} updated: ${this.attribute}=${JSON.stringify(value)}`;
   }
 }

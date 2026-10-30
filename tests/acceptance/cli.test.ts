@@ -19,6 +19,8 @@ describe('real CLI processes', () => {
       expect(result.stdout).toContain("svg-editor 0.1 — type 'help' for commands");
       expect(result.stdout).not.toContain('error:');
       expect(result.stdout).toContain('saved to ' + output + ' (8 elements)');
+      expect(result.stdout).toContain('g#node2 moved by (0,100)\ng#node2 moved back by (0,-100)');
+      expect(result.stdout).not.toMatch(/^(?:undone|redone):/m);
       const document = new XmlSvgCodec(new ShapeFactory()).decode(await readFile(output, 'utf8')).document;
       expect(document.count).toBe(8);
       expect(document.find('node2').parent?.label).toBe('g#flowchart');
@@ -47,6 +49,10 @@ describe('real CLI processes', () => {
       expect(result.stdout).toContain('warning: assigned id rect1 to unnamed <rect>');
       expect(result.stdout).toContain('read tests/fixtures/other.svg (7 elements)');
       expect(result.stdout).toContain('ellipse#e1  cx=1 cy=2 rx=3 ry=4');
+      expect(result.stdout).toContain('circle#c1 moved to (130,100)\ncircle#c1 moved back to (100,100)\ncircle#c1 moved to (130,100)');
+      expect(result.stdout).toContain('text#title updated: text="My Diagram v2"\ntext#title updated: text="My Diagram"');
+      expect(result.stdout).toContain('rect#box deleted\nrect#box restored into g#markers');
+      expect(result.stdout).not.toMatch(/^(?:undone|redone):/m);
       const document = new XmlSvgCodec(new ShapeFactory()).decode(await readFile(path, 'utf8')).document;
       expect(document.count).toBe(5);
       expect(document.find('c1').attributes.cx).toBe('130');

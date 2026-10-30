@@ -8,4 +8,8 @@ export class DeleteCommand extends EditCommand {
     document.delete(this.id);
     return `${label} deleted`;
   }
+  protected describeUndo(document: SvgDocument): string {
+    const shape = document.find(this.id);
+    return `${shape.label} restored into ${shape.parent!.label}`;
+  }
 }

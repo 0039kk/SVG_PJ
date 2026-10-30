@@ -11,4 +11,5 @@ export class CreateCommand extends EditCommand {
     document.add(shape, this.parentId);
     return `${shape.label} created${this.parentId === undefined ? '' : ` in ${shape.parent!.label}`}`;
   }
+  protected describeUndo(_document: SvgDocument): string { return `${this.type}#${this.id} deleted`; }
 }

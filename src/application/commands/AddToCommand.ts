@@ -8,4 +8,8 @@ export class AddToCommand extends EditCommand {
     document.addTo(this.groupId, this.id);
     return `${shape.label} added to ${shape.parent!.label}`;
   }
+  protected describeUndo(document: SvgDocument): string {
+    const shape = document.find(this.id);
+    return `${shape.label} restored into ${shape.parent!.label}`;
+  }
 }

@@ -7,4 +7,8 @@ export class UngroupCommand extends EditCommand {
     document.ungroup(this.id);
     return `g#${this.id} ungrouped`;
   }
+  protected describeUndo(document: SvgDocument): string {
+    const group = document.find(this.id);
+    return `${group.label} restored into ${group.parent!.label}`;
+  }
 }

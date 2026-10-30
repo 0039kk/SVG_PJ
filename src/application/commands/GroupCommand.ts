@@ -7,4 +7,5 @@ export class GroupCommand extends EditCommand {
     const group = document.group(this.id, this.ids);
     return `${group.label} created with ${group.children.length} children`;
   }
+  protected describeUndo(_document: SvgDocument): string { return `g#${this.id} ungrouped`; }
 }
